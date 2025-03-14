@@ -25,7 +25,9 @@ fun EditProfileScreen(
 ) {
     val currentUser by authViewModel.currentUser.collectAsState()
     val scrollState = rememberScrollState()
-    val updateProfileSuccess by authViewModel.updateProfileSuccess.collectAsState()
+
+    // Note: You'll need to add this to your AuthViewModel
+    val updateProfileSuccess by remember { mutableStateOf(null) }
 
     // If not logged in, redirect to login
     if (currentUser == null) {
@@ -40,18 +42,6 @@ fun EditProfileScreen(
     var name by remember { mutableStateOf(currentUser?.name ?: "") }
     var phone by remember { mutableStateOf(currentUser?.phone ?: "") }
     var address by remember { mutableStateOf(currentUser?.address ?: "") }
-
-    // Show success/failure message
-    LaunchedEffect(updateProfileSuccess) {
-        if (updateProfileSuccess == true) {
-            // Show success message
-            // Reset the success message after a short time
-            authViewModel.clearUpdateProfileSuccess()
-        } else if (updateProfileSuccess == false) {
-            // Show failure message
-            authViewModel.clearUpdateProfileSuccess()  // Optionally reset after showing failure
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -73,21 +63,58 @@ fun EditProfileScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+            // Name input
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Phone input
+            OutlinedTextField(
+                value = phone,
+                onValueChange = { phone = it },
+                label = { Text("Phone") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Phone,
+                    imeAction = ImeAction.Next
+                )
+            )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Address input
+            OutlinedTextField(
+                value = address,
+                onValueChange = { address = it },
+                label = { Text("Address") },
+                modifier = Modifier.fillMaxWidth(),
+                maxLines = 3,
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+            )
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             // Success/Failure message
             updateProfileSuccess?.let {
-                if (it) {
-                    Text("Profile updated successfully!", color = MaterialTheme.colorScheme.primary)
-                } else {
-                    Text("Failed to update profile.", color = MaterialTheme.colorScheme.error)
-                }
+                Text(
+                    text = if (it) "Profile updated successfully!" else "Failed to update profile.",
+                    color = if (it) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            // Profile information form...
-            // Your existing form goes here
 
             // Save button
             Button(
                 onClick = {
+                    // You'll need to add this method to your AuthViewModel
                     authViewModel.updateUserProfile(name, phone, address)
                 },
                 modifier = Modifier
@@ -105,4 +132,3 @@ fun EditProfileScreen(
         }
     }
 }
-
