@@ -29,11 +29,25 @@ fun ProductDetailScreen(productId: String,
                         navController: NavController,
                         favoritesViewModel: FavoritesViewModel = viewModel(),
                         cartViewModel: CartViewModel = viewModel()
-){
+) {
     val product = SampleData.getProductById(productId)
-    val isFavorite by favoritesViewModel.savedProductIds.collectAsState().let { state ->
-        remember(state.value, productId) {
-            derivedStateOf { state.value.contains(productId) }
+    val savedProductIds by favoritesViewModel.savedProductIds.collectAsState()
+    val isFavorite by remember(savedProductIds) {
+        derivedStateOf {
+            product?.id?.let { savedProductIds.contains(it) } ?: false
+        }
+    }
+
+    val isLoading by favoritesViewModel.isLoading.collectAsState()
+    // Show error if needed
+    val error by favoritesViewModel.error.collectAsState()
+
+    // Show error in a snackbar if present
+    error?.let {
+        LaunchedEffect(it) {
+            // Show error message
+            // Then clear the error
+            favoritesViewModel.clearError()
         }
     }
 
@@ -53,13 +67,14 @@ fun ProductDetailScreen(productId: String,
                         if (product != null) {
                             favoritesViewModel.toggleFavorite(product)
                         }
-                    }) {
+                    }, enabled = !isLoading) {
                         Icon(
                             if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
                             contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
                             tint = if (isFavorite) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                         )
                     }
+
                     IconButton(onClick = { /* Handle share */ }) {
                         Icon(Icons.Default.Share, contentDescription = "Share")
                     }

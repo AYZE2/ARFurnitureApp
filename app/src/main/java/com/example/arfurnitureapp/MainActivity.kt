@@ -1,16 +1,20 @@
 package com.example.arfurnitureapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.arfurnitureapp.di.DependencyContainer
 import com.example.arfurnitureapp.screens.ARViewScreen
 import com.example.arfurnitureapp.screens.CartScreen
 import com.example.arfurnitureapp.screens.CatergoriesScreen
@@ -29,13 +33,17 @@ import com.example.arfurnitureapp.viewmodel.AuthViewModel
 import com.example.arfurnitureapp.viewmodel.CartViewModel
 import com.example.arfurnitureapp.viewmodel.FavoritesViewModel
 import com.google.firebase.FirebaseApp
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        FirebaseApp.initializeApp(this)
+
+        // Firebase is now initialized in the Application class
+        // No need to initialize it here
+
         setContent {
-            ARFurnitureAppTheme{
+            ARFurnitureAppTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
@@ -46,7 +54,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
 @Composable
 fun IKEARCloneApp() {
     val navController = rememberNavController()
@@ -67,10 +74,12 @@ fun IKEARCloneApp() {
         }
         composable("productDetail/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
-            ProductDetailScreen(productId = productId ?: "",
+            ProductDetailScreen(
+                productId = productId ?: "",
                 navController = navController,
                 favoritesViewModel = favoritesViewModel,
-                cartViewModel = cartViewModel)
+                cartViewModel = cartViewModel
+            )
         }
         composable("arView/{productId}") { backStackEntry ->
             val productId = backStackEntry.arguments?.getString("productId")
@@ -82,7 +91,6 @@ fun IKEARCloneApp() {
                 favoritesViewModel = favoritesViewModel
             )
         }
-
         composable("search") {
             SearchScreen(navController = navController)
         }
@@ -114,12 +122,6 @@ fun IKEARCloneApp() {
         }
         composable("editProfile") {
             EditProfileScreen(
-                navController = navController,
-                authViewModel = authViewModel
-            )
-        }
-        composable("profile") {
-            ProfileScreen(
                 navController = navController,
                 authViewModel = authViewModel
             )

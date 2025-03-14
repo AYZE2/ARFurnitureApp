@@ -34,12 +34,18 @@ fun ProfileScreen(
     val scrollState = rememberScrollState()
 
     LaunchedEffect(isLoggedIn) {
-        if (!isLoggedIn) {
+        if (isLoggedIn) {
+            // Try to fix any potentially missing user documents
+            authViewModel.checkAndFixUserDocument()
+        } else {
+            // Navigate to login
             navController.navigate("login") {
                 popUpTo("profile") { inclusive = true }
             }
         }
     }
+
+
 
     Scaffold(
         topBar = {

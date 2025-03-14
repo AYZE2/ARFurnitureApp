@@ -7,6 +7,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,12 +27,14 @@ fun SavedItemsScreen(
 ) {
     // Collect the saved products state
     val savedProducts by favoritesViewModel.savedProducts.collectAsState()
+    val isLoading by favoritesViewModel.isLoading.collectAsState()
+    val error by favoritesViewModel.error.collectAsState()
 
-    // Add a debug log to check what's in the savedProducts list
-    LaunchedEffect(savedProducts) {
-        Log.d("SavedItemsScreen", "Saved products count: ${savedProducts.size}")
-        savedProducts.forEach {
-            Log.d("SavedItemsScreen", "Saved product: ${it.id} - ${it.name}")
+    // Show error if present
+    error?.let {
+        LaunchedEffect(it) {
+            // Show error snackbar
+            favoritesViewModel.clearError()
         }
     }
 
@@ -43,6 +46,11 @@ fun SavedItemsScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
                     }
+                },
+                actions = {
+                    IconButton(onClick = { favoritesViewModel.refreshFavorites() }) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Refresh")
+                    }
                 }
             )
         },
@@ -50,7 +58,18 @@ fun SavedItemsScreen(
             BottomNavigationBar(navController = navController)
         }
     ) { paddingValues ->
-        if (savedProducts.isEmpty()) {
+        if (isLoading && savedProducts.isEmpty()) {
+            // Show loading indicator
+            Box(
+                modifier = Modifier
+                    .padding(paddingValues)
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator()
+            }
+        } else if (savedProducts.isEmpty()) {
+            // Show empty state
             Box(
                 modifier = Modifier
                     .padding(paddingValues)
@@ -80,6 +99,7 @@ fun SavedItemsScreen(
                 }
             }
         } else {
+            // Show favorites list
             LazyColumn(
                 modifier = Modifier
                     .padding(paddingValues)
